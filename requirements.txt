@@ -1,0 +1,5 @@
+Flask>=2.0
+python-dotenv>=0.19
+Werkzeug>=2.0
+gunicorn>=20.1.0 
+# A última linha adiciona o gunicorn como uma opção de servidor de produção.
