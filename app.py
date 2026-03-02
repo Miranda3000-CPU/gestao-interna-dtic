@@ -218,8 +218,8 @@ def gerar_civil():
     except ValueError:
         mes_selecionado = agora.month
         ano_selecionado = agora.year
-    mes_nome = calendar.month_name[agora.month].upper()
-    _, num_dias = calendar.monthrange(agora.year, agora.month)
+    mes_nome = calendar.month_name[mes_selecionado].upper()
+    _, num_dias = calendar.monthrange(ano_selecionado, mes_selecionado)
     
     dias = []
     for d in range(1, num_dias + 1):
