@@ -114,7 +114,9 @@ def home():
         "dia_inicio": "01",
         "dia_fim": str(ultimo_dia), 
         "comandante": "LUIZ ALFREDO SILVA GALIZA DOS SANTOS – TCEL QOBM",
-        "nome_guerra_comandante": "LUIZ ALFREDO"
+        "nome_guerra_comandante": "LUIZ ALFREDO",
+        "ano_atual": agora.year,
+        "mes_atual": agora.month
     }
     
     # 3. Envia tudo para o HTML com os nomes corretos
@@ -210,12 +212,18 @@ def gerar_civil():
     nome_guerra_comandante = request.args.get('nome_guerra_comandante', 'LUIZ ALFREDO')
     
     agora = datetime.now()
+    try:
+        mes_selecionado = int(request.args.get('mes', agora.month))
+        ano_selecionado = int(request.args.get('ano', agora.year))
+    except ValueError:
+        mes_selecionado = agora.month
+        ano_selecionado = agora.year
     mes_nome = calendar.month_name[agora.month].upper()
     _, num_dias = calendar.monthrange(agora.year, agora.month)
     
     dias = []
     for d in range(1, num_dias + 1):
-        dt = datetime(agora.year, agora.month, d)
+        dt = datetime(ano_selecionado, mes_selecionado, d)
         dias.append({
             "numero": d,
             "is_fim_de_semana": dt.weekday() >= 5, # 5=Sáb, 6=Dom
@@ -225,7 +233,7 @@ def gerar_civil():
     return render_template('folha_civil.html', 
                            voluntarios=voluntarios, 
                            mes=mes_nome, 
-                           ano=agora.year, 
+                           ano=ano_selecionado, 
                            dias=dias, 
                            comandante=comandante,
                            nome_guerra_comandante=nome_guerra_comandante)
