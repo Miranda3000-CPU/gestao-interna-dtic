@@ -155,7 +155,7 @@
 
         <div class="info-section">
             SEÇÃO: Diretoria de Tecnologia da Informação e Comunicação (DTIC)<br>
-            NOME: {% set partes_nome_guerra = m.nome.split(m.nome_guerra) %}{{ partes_nome_guerra[0] }}<strong>{{ m.nome_guerra }}</strong>{{ partes_nome_guerra[1] if partes_nome_guerra|length > 1 else '' }}
+            NOME: {{ m.nome | highlight_nome_guerra(m.nome_guerra) }}
         </div>
 
         <table>
@@ -178,8 +178,7 @@
                         {% elif dia.tipo == 'domingo' %}
                             <span class="weekend-text">DOMINGO</span>
                         {% else %}
-                            {% set partes = m.nome.split(m.nome_guerra) %}
-                            {{ partes[0] }}<b>{{ m.nome_guerra }}</b>{{ partes[1] if partes|length > 1 else '' }}
+                            {{ m.nome | highlight_nome_guerra(m.nome_guerra) }}
                         {% endif %}
                     </td>
 
