@@ -137,14 +137,13 @@
                     <strong>UBM:</strong> QCG &nbsp;&nbsp;&nbsp; <strong>SEÇÃO:</strong> DTIC
                 </td>
                 <td style="border: none; text-align: right; padding: 2px;">
-                    <strong>HORÁRIO:</strong> {% if vc.turno == 'manhã' %}09:00 ÀS 15:00{% else %}12:00 ÀS 18:00{% endif %}
+                    <strong>HORÁRIO:</strong> {% if (vc.turno|default('')|lower|trim) == 'tarde' %}12:00 ÀS 18:00{% else %}09:00 ÀS 15:00{% endif %}
                 </td>
             </tr>
             <tr style="border: none;">
                 <td style="border: none; padding: 2px;" colspan="2">
                     <strong>VOLUNTÁRIO CIVIL:</strong> 
-                    {% set partes = vc.nome.split(vc.nome_guerra) %}
-                    {{ partes[0] }}<b>{{ vc.nome_guerra }}</b>{{ partes[1] if partes|length > 1 else '' }}
+                    {{ vc.nome | highlight_nome_guerra(vc.nome_guerra) }}
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <strong>FUNÇÃO:</strong> {{ vc.funcao|upper }}
                 </td>
@@ -171,13 +170,21 @@
                 <tr>
                     <td class="col-dia">{{ dia.numero }}</td>
                     
-                    {% if dia.is_fim_de_semana %}
+                    {% if dia.is_fim_de_semana or dia.is_feriado %}
                         <td class="weekend-text">{{ dia.texto }}</td>
                         <td></td>
                         <td></td>
                         <td></td>
                     {% else %}
-                        <td></td> <td></td> <td></td> <td></td> 
+                        <td></td>
+                        {% if (vc.turno|default('')|lower|trim) == 'tarde' %}
+                        <td class="center bold">12:00</td>
+                        <td class="center bold">18:00</td>
+                        {% else %}
+                        <td class="center bold">09:00</td>
+                        <td class="center bold">15:00</td>
+                        {% endif %}
+                        <td></td>
                     {% endif %}
                 </tr>
                 {% endfor %}
@@ -214,8 +221,7 @@
         <div style="border: 1px solid black; padding: 5px; margin-bottom: 5px; font-size: 11px;">
             <strong>UBM:</strong> QCG &nbsp;&nbsp;&nbsp;&nbsp; <strong>SEÇÃO:</strong> DTIC<br>
             <strong>COMANDANTE:</strong>
-            {% set partes = comandante.split(nome_guerra_comandante) %}
-            {{ partes[0] }}<b>{{ nome_guerra_comandante }}</b>{{ partes[1] if partes|length > 1 else '' }}<br>
+            {{ comandante | highlight_nome_guerra(nome_guerra_comandante) }}<br>
             <strong>RESPONSÁVEL PELO PROJETO:</strong>
         </div>
 
