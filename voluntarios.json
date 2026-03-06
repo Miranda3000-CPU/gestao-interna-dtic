@@ -21,13 +21,6 @@
         "turno": "tarde"
     },
     {
-        "id": 5,
-        "nome": "RAYNE DE LOURDES DA COSTA MUNIZ",
-        "nome_guerra": "MUNIZ",
-        "funcao": "Técnico",
-        "turno": "manhã"
-    },
-    {
         "id": 6,
         "nome": "GESSYCA LETHYCIA RODRIGUES BARBOSA",
         "nome_guerra": "GESSYCA",
@@ -56,7 +49,7 @@
         "turno": "tarde"
     },
     {
-        "id": 11,
+        "id": 10,
         "nome": "FÁBIO REIS DA CRUZ",
         "nome_guerra": "FÁBIO CRUZ",
         "funcao": "Técnico",
