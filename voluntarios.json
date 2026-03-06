@@ -54,5 +54,12 @@
         "nome_guerra": "LUAN",
         "funcao": "Técnico",
         "turno": "tarde"
+    },
+    {
+        "id": 11,
+        "nome": "FÁBIO REIS DA CRUZ",
+        "nome_guerra": "FÁBIO CRUZ",
+        "funcao": "Técnico",
+        "turno": "manhã"
     }
 ]
