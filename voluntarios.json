@@ -1,12 +1,5 @@
 [
     {
-        "id": 1,
-        "nome": "JEIEL LIMA MIRANDA",
-        "nome_guerra": "MIRANDA",
-        "funcao": "Técnico",
-        "turno": "manhã"
-    },
-    {
         "id": 2,
         "nome": "GIOVANNA SALDANHA GAIA",
         "nome_guerra": "GIOVANNA",
@@ -52,6 +45,13 @@
         "id": 10,
         "nome": "FÁBIO REIS DA CRUZ",
         "nome_guerra": "FÁBIO CRUZ",
+        "funcao": "Técnico",
+        "turno": "manhã"
+    },
+    {
+        "id": 11,
+        "nome": "THAYSSA PINHEIRO LOPES",
+        "nome_guerra": "THAYSSA LOPES",
         "funcao": "Técnico",
         "turno": "manhã"
     }
