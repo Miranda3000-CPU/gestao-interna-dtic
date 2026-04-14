@@ -35,13 +35,6 @@
         "turno": "manhã"
     },
     {
-        "id": 9,
-        "nome": "LUAN RAFAEL LIRA FERNANDES",
-        "nome_guerra": "LUAN",
-        "funcao": "Técnico",
-        "turno": "tarde"
-    },
-    {
         "id": 10,
         "nome": "FÁBIO REIS DA CRUZ",
         "nome_guerra": "FÁBIO CRUZ",
@@ -52,6 +45,13 @@
         "id": 11,
         "nome": "THAYSSA PINHEIRO LOPES",
         "nome_guerra": "THAYSSA LOPES",
+        "funcao": "Técnico",
+        "turno": "manhã"
+    },
+    {
+        "id": 12,
+        "nome": "LUAN RAFAEL LIRA FERNANDES",
+        "nome_guerra": "LUAN",
         "funcao": "Técnico",
         "turno": "manhã"
     }
