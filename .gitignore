@@ -2,3 +2,10 @@
 __pycache__/
 *.pyc
 .DS_Store
+venv/
+
+# Build artifacts
+build/
+dist/
+installer_output/
+*.spec.bak

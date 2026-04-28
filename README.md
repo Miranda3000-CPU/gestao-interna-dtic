@@ -1,99 +1,133 @@
 <img width="1236" height="744" alt="{92F8F0D7-E3CC-4CCB-93A3-E03A3F0296AB}" src="https://github.com/user-attachments/assets/5de02ec8-5ade-495b-a7a3-260b0bc6ec86" />
 
-# Sistema de Gestão de Pessoal - CBMPA/DTIC
+# Sistema de Gestão de Pessoal — CBMPA/DTIC
 
-Este sistema foi desenvolvido para a **Diretoria de Tecnologia da Informação e Comunicação (DTIC)** do Corpo de Bombeiros Militar do Pará (CBMPA). A aplicação evoluiu para uma solução integrada que realiza a gestão tanto de **Voluntários Civis** quanto de **Militares (Praças)**, automatizando a emissão de folhas de frequência e registros de serviço extraordinário.
+Sistema interno da **Diretoria de Tecnologia da Informação e Comunicação (DTIC)** do Corpo de Bombeiros Militar do Pará. Gerencia o efetivo de **Voluntários Civis** e **Militares (Praças)**, com emissão automática de folhas de frequência e registros de serviço extraordinário.
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
-O sistema é dividido em dois módulos principais, identificados visualmente na interface:
+### 🔹 Módulo Voluntários Civis
+- Cadastro e remoção de voluntários (Técnico / Secretária)
+- Folha de frequência com dias úteis, fins de semana e feriados nacionais
+- Persistência em `voluntarios.json`
 
-### 🔹 Módulo Voluntários Civis (Painel Azul)
+### 🔺 Módulo Militares / Praças
+- Cadastro com graduação (SD, CB, SGT, SUB TEN) e nome de guerra
+- Folha de Serviço Extraordinário / Reforço do Expediente
+- Preenchimento automático de sábados e domingos
+- Persistência em `militares.json`
 
-* **Gestão de Efetivo:** Cadastro e remoção de voluntários (Funções: Técnico/Secretária).
-* **Folha de Frequência:** Gera relatório em HTML/PDF com preenchimento automático de dias úteis e fins de semana, conforme o mês atual.
-* **Base de Dados:** Persistência em arquivo JSON dedicado (`voluntarios.json`).
+### ⚙️ Geral
+- Autenticação por senha (variável de ambiente)
+- Sessão com expiração de 5 minutos
+- Detecção automática de feriados nacionais (incluindo móveis)
+- Interface responsiva com Tailwind CSS
 
-### 🔺 Módulo Militares / Praças (Painel Vermelho)
+## Tecnologias
 
-* **Gestão de Praças:** Cadastro de militares com graduação (SD, CB, SGT, SUB TEN) e nome de guerra.
-* **Serviço Extraordinário:** Geração automática da folha de "Registro de Serviço Extraordinário / Reforço do Expediente".
-* **Automação:** O sistema preenche automaticamente os dias do mês, inserindo "SÁBADO" e "DOMINGO" e deixando os dias úteis prontos para assinatura e horário (padrão 17:00).
-* **Base de Dados:** Persistência em arquivo JSON dedicado (`militares.json`).
+| Camada | Tecnologia |
+|---|---|
+| Linguagem | Python 3.14 |
+| Framework | Flask 3.x |
+| Frontend | HTML5 + Tailwind CSS (CDN) |
+| Servidor (produção) | Gunicorn |
+| Containerização | Docker + Docker Compose |
 
-### ⚙️ Características Técnicas
-
-* **Autenticação:** Acesso restrito via senha administrativa definida em variável de ambiente (`.env`).
-* **Interface:** Layout responsivo e limpo construído com **Tailwind CSS**.
-* **Ambiente Brasileiro:** O container Docker é configurado explicitamente com `locales` `pt_BR.UTF-8` para garantir datas e formatações corretas.
-
-## 🛠️ Tecnologias Utilizadas
-
-* **Linguagem:** Python 3.9
-* **Framework Web:** Flask
-* **Servidor de Aplicação:** Gunicorn (configurado no Dockerfile)
-* **Frontend:** HTML5 + Tailwind CSS (CDN)
-* **Containerização:** Docker e Docker Compose
-
-## 📦 Instalação e Execução
-
-### Pré-requisitos
-
-* Docker e Docker Compose instalados na máquina.
-
-### 1. Configuração Inicial
-
-Na raiz do projeto, crie (ou verifique) o arquivo `.env` com a senha de administração:
-
-```bash
-ADMIN_PASSWORD=1234  # Altere para sua senha segura
+## Estrutura do Projeto
 
 ```
-
-### 2. Executando com Docker (Recomendado)
-
-O projeto já inclui um `Dockerfile` otimizado que configura o idioma PT-BR e instala as dependências.
-
-```bash
-# Constrói a imagem e sobe o container
-docker-compose up --build
-
+gestao-interna-dtic/
+├── app.py                  # Aplicação Flask (rotas, CRUD, geração de folhas)
+├── run_app.py              # Launcher para Windows (abre navegador)
+├── requirements.txt        # Dependências Linux/Docker (com gunicorn)
+├── requirements_windows.txt# Dependências Windows (com pyinstaller)
+├── Dockerfile              # Imagem Docker (Python 3.14 + locale PT-BR)
+├── docker-compose.yml      # Orquestração Docker
+├── gestao_dtic.spec        # Configuração PyInstaller
+├── installer.iss           # Script Inno Setup (instalador Windows)
+├── build_windows.bat       # Script de build automatizado para Windows
+├── .env                    # Senha de administração (não versionado)
+├── voluntarios.json        # Dados dos voluntários civis
+├── militares.json          # Dados dos militares
+├── templates/
+│   ├── index.html          # Dashboard principal
+│   ├── login.html          # Tela de login
+│   ├── folha_civil.html    # Folha de frequência (impressão)
+│   └── folha_militar.html  # Folha de serviço extraordinário (impressão)
+└── static/
+    ├── brasao.jpg           # Brasão CBMPA
+    ├── dte_logo.png         # Logo DTE
+    └── header_militar.png   # Cabeçalho folha militar
 ```
 
-Após o comando, acesse o sistema em:
-👉 **http://localhost:5000**
+## Instalação
 
-*(Nota: O container roda internamente na porta 8000, mas o `docker-compose` a mapeia para a 5000)*.
+### Configuração Inicial
 
-### 3. Execução Manual (Sem Docker)
-
-Caso prefira rodar diretamente no Python:
+Crie o arquivo `.env` na raiz do projeto:
 
 ```bash
-# Crie e ative o ambiente virtual
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# .venv\Scripts\activate   # Windows
-
-# Instale as dependências
-pip install -r requirements.txt
-
-# Execute a aplicação
-flask run
-
+ADMIN_PASSWORD=sua_senha_segura
 ```
-
-## 📂 Estrutura de Arquivos
-
-* `app.py`: Lógica principal, rotas e controle de sessão.
-* `templates/`:
-* `index.html`: Dashboard principal com os dois painéis (Civil/Militar).
-* `folha_civil.html` & `folha_militar.html`: Modelos de impressão.
-
-
-* `static/`: Contém os brasões e logos (CBMPA, DTE, Defesa Civil).
-* `*.json`: Arquivos onde os dados são salvos automaticamente.
 
 ---
 
-© 2026 CBMPA/DTIC - [Licença MIT](https://www.google.com/search?q=LICENSE)
+### 🐧 Linux / Mac — Desenvolvimento Local
+
+```bash
+# Cria e ativa o ambiente virtual
+python3 -m venv venv
+source venv/bin/activate
+
+# Instala dependências
+pip install -r requirements.txt
+
+# Inicia o servidor de desenvolvimento
+python app.py
+```
+
+Acesse em: **http://localhost:5000**
+
+---
+
+### 🐳 Docker — Produção
+
+```bash
+docker-compose up --build
+```
+
+Acesse em: **http://localhost:5000** (mapeado da porta interna 8000)
+
+---
+
+### 🪟 Windows — Instalador Desktop
+
+> **Pré-requisitos:** Python 3.10+ com "Add to PATH" marcado.
+
+#### Opção 1 — Script Automatizado
+
+1. Copie a pasta do projeto para o computador Windows
+2. Dê duplo-clique em `build_windows.bat`
+3. O script instala dependências, gera o `.exe` com PyInstaller e, se o [Inno Setup 6](https://jrsoftware.org/isdl.php) estiver instalado, cria o instalador
+
+#### Opção 2 — Manual
+
+```batch
+pip install -r requirements_windows.txt
+pyinstaller gestao_dtic.spec --noconfirm
+```
+
+**Resultado:**
+
+| Cenário | Arquivo |
+|---|---|
+| Sem Inno Setup | `dist\GestaoInternaDTIC\GestaoInternaDTIC.exe` (portátil) |
+| Com Inno Setup | `installer_output\GestaoInternaDTIC_Setup_v1.0.0.exe` |
+
+O executável inicia o servidor Flask localmente e abre o navegador automaticamente.
+
+> **Nota:** O PyInstaller gera executáveis para o SO em que é executado. Para gerar `.exe`, rode o build **em um computador Windows**.
+
+## Licença
+
+[MIT](LICENSE) — © 2026 CBMPA/DTIC

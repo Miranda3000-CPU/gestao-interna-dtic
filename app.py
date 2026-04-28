@@ -25,20 +25,17 @@ DB_MILITAR = os.path.join(basedir, 'militares.json')
 
 # Chave secreta para gerenciamento de sessão
 app.config['SECRET_KEY'] = os.urandom(24)
-# Configurar tempo de sessão (5 minutos)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
 
-
-# Tenta configurar local para PT-BR
-try:
-    locale.setlocale(locale.LC_ALL, 'pt_BR.utf8')
-except:
+# Tenta configurar locale para PT-BR (Linux, Mac e Windows)
+for loc in ('pt_BR.UTF-8', 'pt_BR.utf8', 'pt_BR', 'Portuguese_Brazil.1252', ''):
     try:
-        locale.setlocale(locale.LC_ALL, 'pt_BR') 
-    except:
-        pass 
+        locale.setlocale(locale.LC_ALL, loc)
+        break
+    except locale.Error:
+        continue
 
 # Decorator para exigir login
 def login_required(f):
@@ -152,31 +149,27 @@ def logout():
 @app.route('/')
 @login_required
 def home():
-    # 1. Carrega os dois bancos de dados (Civil e Militar)
-    # Se der erro aqui, verifique se definiu DB_CIVIL e DB_MILITAR lá em cima
-    civis = load_json(DB_CIVIL)       
-    militares = load_json(DB_MILITAR) 
-    
-    # 2. Configura os dados padrão (ISSO CORRIGE O ERRO 'padrao undefined')
+    civis = load_json(DB_CIVIL)
+    militares = load_json(DB_MILITAR)
+
     agora = datetime.now()
     ultimo_dia = calendar.monthrange(agora.year, agora.month)[1]
-    
+
     dados_padrao = {
         "nota_num": "001",
         "dia_inicio": "01",
-        "dia_fim": str(ultimo_dia), 
+        "dia_fim": str(ultimo_dia),
         "comandante": "LUIZ ALFREDO SILVA GALIZA DOS SANTOS – TCEL QOBM",
         "nome_guerra_comandante": "LUIZ ALFREDO",
         "ano_atual": agora.year,
         "mes_atual": agora.month
     }
-    
-    # 3. Envia tudo para o HTML com os nomes corretos
+
     return render_template(
-        'index.html', 
-        civis=civis,          # O HTML novo espera 'civis' (não 'voluntarios')
-        militares=militares,  # O HTML novo espera 'militares'
-        padrao=dados_padrao   # <--- AQUI ESTÁ A CORREÇÃO PRINCIPAL
+        'index.html',
+        civis=civis,
+        militares=militares,
+        padrao=dados_padrao
     )
 
 # --- CRUD CIVIL (Mantido) ---
@@ -229,31 +222,6 @@ def del_militar(id):
     return redirect(url_for('home'))
 
 # --- GERAÇÃO DE FOLHAS ---
-def _generate_dias_data(year, month):
-    agora = datetime(year, month, 1) # Use the provided year and month
-    _, num_dias_mes = calendar.monthrange(year, month)
-
-    dias = []
-    for d in range(1, 32): # Table fixed to 31 rows generally
-        if d > num_dias_mes:
-            dias.append({"numero": d, "tipo": "nulo", "texto": ""})
-            continue
-
-        dt = datetime(year, month, d)
-        weekday = dt.weekday()
-
-        tipo = "dia_util"
-        texto = ""
-
-        if weekday == 5:
-            tipo = "sabado"
-            texto = "SÁBADO"
-        elif weekday == 6:
-            tipo = "domingo"
-            texto = "DOMINGO"
-
-        dias.append({"numero": f"{d:02d}", "tipo": tipo, "texto": texto})
-    return dias
 
 def _easter_sunday(year):
     """Computa a data do domingo de Páscoa (algoritmo de Meeus/Jones/Butcher)."""
@@ -345,36 +313,29 @@ def gerar_civil():
 def gerar_militar():
     militares = load_json(DB_MILITAR)
     nota_num = request.args.get('nota_num', '001')
-    
-    # 1. Detecta Data Atual
+
     agora = datetime.now()
-    
-    # 2. Configura Mês e Último Dia Real (ex: Fev = 28)
-    # locale já foi configurado no início do script, então month_name vem em PT ou Inglês dependendo do sistema
-    # Vamos garantir UPPERCASE
     mes_nome = calendar.month_name[agora.month].upper()
     _, ultimo_dia = calendar.monthrange(agora.year, agora.month)
-    
-    # 3. Textos
+
     periodo_str = f"01 A {ultimo_dia:02d} DE {mes_nome} DE {agora.year}"
     nota_str = f"{nota_num}/{agora.year}"
 
-    # 4. Gera dias DINÂMICOS (Só vai até o último dia do mês, igual ao Civil)
     dias = []
     for d in range(1, ultimo_dia + 1):
         dt = datetime(agora.year, agora.month, d)
-        weekday = dt.weekday() # 0=Seg, 5=Sáb, 6=Dom
-        
+        weekday = dt.weekday()
+
         tipo = "dia_util"
         texto = ""
-        
+
         if weekday == 5:
             tipo = "sabado"
             texto = "SÁBADO"
         elif weekday == 6:
             tipo = "domingo"
             texto = "DOMINGO"
-            
+
         dias.append({"numero": f"{d:02d}", "tipo": tipo, "texto": texto})
 
     return render_template('folha_militar.html',
