@@ -1,4 +1,3 @@
-# Python (Arquivos de cache e bytecode)
 __pycache__/
 *.py[cod]
 *$py.class
@@ -16,3 +15,4 @@ dist/
 *.sqlite3
 .vscode/
 .idea/
+build_windows/
