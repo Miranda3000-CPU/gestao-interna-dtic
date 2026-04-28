@@ -6,3 +6,13 @@ build/
 dist/
 installer_output/
 *.spec.bak
+
+# Configurações locais
+.env
+
+# Builds do Windows
+build_windows/
+dist_windows/
+
+# Arquivos empacotados
+*.zip
