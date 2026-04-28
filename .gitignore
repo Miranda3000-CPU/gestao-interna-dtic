@@ -1,18 +1,18 @@
+# Python (Arquivos de cache e bytecode)
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+*$py.class
+.venv/
 venv/
+env/
+.env
+instance/
+.pytest_cache/
 build/
 dist/
-installer_output/
-*.spec.bak
-
-# Configurações locais
-.env
-
-# Builds do Windows
-build_windows/
-dist_windows/
-
-# Arquivos empacotados
-*.zip
+*.spec
+*.log
+*.db
+*.sqlite3
+.vscode/
+.idea/
