@@ -23,8 +23,7 @@ DefaultGroupName={#MyAppName}
 ; LicenseFile=LICENSE
 OutputDir=installer_output
 OutputBaseFilename=GestaoInternaDTIC_Setup_v{#MyAppVersion}
-; Descomente se tiver um ícone .ico para o instalador
-; SetupIconFile=static\icon.ico
+SetupIconFile=static\icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -49,10 +48,7 @@ Name: "desktopicon"; Description: "Criar atalho na Área de Trabalho"; GroupDesc
 Name: "startmenu"; Description: "Criar atalho no Menu Iniciar"; GroupDescription: "Atalhos:"; Flags: checked
 
 [Files]
-; Todos os arquivos gerados pelo PyInstaller
 Source: "dist\GestaoInternaDTIC\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Arquivo de configuração (não sobrescreve se já existir)
-Source: ".env"; DestDir: "{app}"; Flags: onlyifdoesntexist
 ; Dados JSON iniciais (não sobrescreve para preservar dados do usuário)
 Source: "voluntarios.json"; DestDir: "{app}"; Flags: onlyifdoesntexist
 Source: "militares.json"; DestDir: "{app}"; Flags: onlyifdoesntexist

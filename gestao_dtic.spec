@@ -14,16 +14,10 @@ a = Analysis(
     pathex=[base_dir],
     binaries=[],
     datas=[
-        # Templates HTML
         ('templates', 'templates'),
-        # Arquivos estáticos (CSS, imagens, etc.)
         ('static', 'static'),
-        # Arquivos de dados JSON (cópia inicial)
         ('voluntarios.json', '.'),
         ('militares.json', '.'),
-        # Arquivo de ambiente
-        ('.env', '.'),
-        # Aplicação principal
         ('app.py', '.'),
     ],
     hiddenimports=[
@@ -81,7 +75,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # icon='static/icon.ico',  # Descomente se tiver um ícone .ico
+    icon='static/icon.ico',
 )
 
 coll = COLLECT(

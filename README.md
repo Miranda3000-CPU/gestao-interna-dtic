@@ -100,33 +100,21 @@ Acesse em: **http://localhost:5000** (mapeado da porta interna 8000)
 
 ---
 
-### 🪟 Windows — Instalador Desktop
+### 🪟 Build do Executável Windows (Via Linux com Wine)
 
-> **Pré-requisitos:** Python 3.10+ com "Add to PATH" marcado.
+Para gerar o `.exe` Windows a partir do ambiente Linux, utilize o Python instalado dentro do Wine:
 
-#### Opção 1 — Script Automatizado
-
-1. Copie a pasta do projeto para o computador Windows
-2. Dê duplo-clique em `build_windows.bat`
-3. O script instala dependências, gera o `.exe` com PyInstaller e, se o [Inno Setup 6](https://jrsoftware.org/isdl.php) estiver instalado, cria o instalador
-
-#### Opção 2 — Manual
-
-```batch
-pip install -r requirements_windows.txt
-pyinstaller gestao_dtic.spec --noconfirm
+```bash
+# Executa o PyInstaller usando a instalação do Python no Wine
+wine ~/.wine/drive_c/users/jeiel/AppData/Local/Programs/Python/Python312/python.exe -m PyInstaller gestao_dtic.spec --noconfirm --distpath dist_windows --workpath build_windows
 ```
 
 **Resultado:**
 
-| Cenário | Arquivo |
-|---|---|
-| Sem Inno Setup | `dist\GestaoInternaDTIC\GestaoInternaDTIC.exe` (portátil) |
-| Com Inno Setup | `installer_output\GestaoInternaDTIC_Setup_v1.0.0.exe` |
+O executável gerado estará localizado em:
+`dist_windows/GestaoInternaDTIC/GestaoInternaDTIC.exe`
 
-O executável inicia o servidor Flask localmente e abre o navegador automaticamente.
-
-> **Nota:** O PyInstaller gera executáveis para o SO em que é executado. Para gerar `.exe`, rode o build **em um computador Windows**.
+Ao executar o `.exe` no Windows, ele iniciará o servidor Flask localmente e abrirá o navegador padrão automaticamente. Não é necessária a instalação prévia de dependências ou do Python na máquina de destino.
 
 ## Licença
 

@@ -1,0 +1,56 @@
+[
+    {
+        "id": 1,
+        "graduacao": "SD/QBM",
+        "nome": "MARCUS VICTOR FERREIRA DA SILVA",
+        "nome_guerra": "VICTOR"
+    },
+    {
+        "id": 2,
+        "graduacao": "2° SGT/QBM",
+        "nome": "HAUEL DA SILVA BARROS",
+        "nome_guerra": "S. BARROS"
+    },
+    {
+        "id": 3,
+        "graduacao": "SD/QBM",
+        "nome": "JHORDAN DA SILVA PENA",
+        "nome_guerra": "PENA"
+    },
+    {
+        "id": 4,
+        "graduacao": "SD/QBM",
+        "nome": "JORGE FERNANDO NEVES NASCIMENTO",
+        "nome_guerra": "NEVES"
+    },
+    {
+        "id": 5,
+        "graduacao": "CB/QBM",
+        "nome": "LUCIANA LIRA FERNANDES",
+        "nome_guerra": "LUCIANA"
+    },
+    {
+        "id": 7,
+        "graduacao": "SUB TEN/QBM",
+        "nome": "EROS NAZARENO DIAS",
+        "nome_guerra": "EROS"
+    },
+    {
+        "id": 8,
+        "graduacao": "SD/QBM",
+        "nome": "DENNYSON ALENCAR DA SILVA",
+        "nome_guerra": "DENNYSON"
+    },
+    {
+        "id": 9,
+        "graduacao": "2° TEN/QBM",
+        "nome": "EMERSON CARLOS SOUZA MORAES",
+        "nome_guerra": "EMERSON"
+    },
+    {
+        "id": 10,
+        "graduacao": "2° TEN/QBM",
+        "nome": "LUCIANO NAZARENO DE FURTADO SEWNARINE",
+        "nome_guerra": "LUCIANO"
+    }
+]

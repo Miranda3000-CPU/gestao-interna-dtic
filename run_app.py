@@ -44,15 +44,6 @@ def main():
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write('[]')
 
-    # Garante que o arquivo .env exista
-    env_path = os.path.join(base_path, '.env')
-    if not os.path.exists(env_path):
-        with open(env_path, 'w', encoding='utf-8') as f:
-            f.write('ADMIN_PASSWORD=#admin#@2024\n')
-
-    # Define variáveis de ambiente
-    os.environ['FLASK_ENV'] = 'production'
-
     # Configura o path para que o app.py encontre seus arquivos
     os.chdir(base_path)
     sys.path.insert(0, base_path)

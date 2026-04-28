@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Serviço Extraordinário</title>
+    <style>
+        /* ============================================================
+           CONFIGURAÇÕES IMPORTADAS DA FOLHA CIVIL (PADRÃO UNIFICADO)
+           ============================================================ */
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 10mm; 
+            }
+            body { 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .no-print { display: none; }
+            .page-break { page-break-after: always; }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+        }
+
+        /* Usando .container (igual Civil) ao invés de .sheet fixa */
+        .container { 
+            width: 100%; 
+            max-width: 210mm; 
+            margin: 0 auto; 
+            /* Altura automática: resolve o problema do rodapé pulando página */
+            position: relative;
+        }
+
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+
+        /* Tabelas */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 5px; 
+            font-size: 10px;
+        }
+        td, th { 
+            border: 1px solid black; 
+            padding: 2px 3px; /* Espaçamento ajustado */
+            vertical-align: middle; 
+        }
+
+        /* =========================================
+           ESTILOS ESPECÍFICOS MILITARES (ADAPTADOS)
+           ========================================= */
+        
+        /* Cabeçalho */
+        .header-box { text-align: center; margin-bottom: 10px; }
+        .header-logo { height: 65px; margin-bottom: 5px; }
+        .header-text { font-size: 12px; font-weight: bold; text-transform: uppercase; line-height: 1.2; }
+
+        /* Título com bordas (Militar) */
+        .title-box {
+            border-top: 2px solid black;
+            border-bottom: 2px solid black;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 5px 0;
+            margin-bottom: 10px;
+        }
+
+        .info-section { font-size: 11px; font-weight: bold; margin-bottom: 5px; }
+
+        /* Estilos da Tabela Militar */
+        th { background-color: #d9d9d9; }
+        td { height: 14px; } /* Altura compacta */
+
+        .col-dia { width: 35px; text-align: center; background-color: #e0e0e0; font-weight: bold; }
+        .col-ass { text-align: center; }
+        .col-hora { width: 80px; text-align: center; }
+        .col-visto { width: 180px; }
+        
+        .weekend-text { font-weight: bold; letter-spacing: 1px; }
+        
+        .total-row {
+            background-color: #d9d9d9;
+            font-weight: bold;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        /* Rodapé Flexível (Substitui o absoluto) */
+        .footer-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; /* Alinha itens na base */
+            margin-top: 20px; /* Espaço natural após a tabela */
+            padding-bottom: 10px;
+        }
+        
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+        .footer-logo { height: 50px; }
+        
+        .footer-right {
+            text-align: center;
+            width: 250px;
+            border: 1px solid black;
+            height: 90px;
+            position: relative;
+        }
+        
+        .signature-text {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="position: fixed; top: 0; left: 0; width: 100%; background: #333; color: white; padding: 10px; text-align: center; z-index: 9999;">
+        <button onclick="window.print()" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; font-size: 14px;">🖨️ IMPRIMIR / SALVAR PDF</button>
+    </div>
+    <div style="height: 50px;" class="no-print"></div>
+
+    {% for m in militares %}
+    <div class="container page-break">
+        
+        <div class="header-box">
+            <img src="{{ url_for('static', filename='header_militar.png') }}" class="header-logo" alt="Logos">
+            <div class="header-text">
+                CORPO DE BOMBEIROS MILITAR DO PARÁ E<br>
+                COORDENADORIA ESTADUAL DE DEFESA CIVIL<br>
+                DIRETORIA DE TECNOLOGIA DA INFORMAÇÃO<br>
+                E COMUNICAÇÃO
+            </div>
+        </div>
+
+        <div class="title-box">
+            REGISTRO DE SERVIÇO EXTRAORDINÁRIO / REFORÇO DO EXPEDIENTE<br>
+            <span style="font-weight: normal;">NOTA DE SERVIÇO Nº {{ nota }}</span><br>
+            PERÍODO DE {{ periodo }}
+        </div>
+
+        <div class="info-section">
+            SEÇÃO: Diretoria de Tecnologia da Informação e Comunicação (DTIC)<br>
+            NOME: {{ m.nome | highlight_nome_guerra(m.nome_guerra) }}
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-dia">DIA</th>
+                    <th class="col-ass">ASSINATURA DO MILITAR</th>
+                    <th class="col-hora">HORÁRIO DE<br>SAÍDA</th>
+                    <th class="col-visto">VISTO DO OFICIAL SUPERIOR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dia in dias %}
+                <tr>
+                    <td class="col-dia">{{ dia.numero }}</td>
+                    
+                    <td class="col-ass">
+                        {% if dia.tipo == 'sabado' %}
+                            <span class="weekend-text">SÁBADO</span>
+                        {% elif dia.tipo == 'domingo' %}
+                            <span class="weekend-text">DOMINGO</span>
+                        {% else %}
+                            {{ m.nome | highlight_nome_guerra(m.nome_guerra) }}
+                        {% endif %}
+                    </td>
+
+                    <td class="col-hora">17:00</td>
+                    <td class="col-visto"></td>
+                </tr>
+                {% endfor %}
+                
+                <tr>
+                    <td colspan="2" class="total-row" style="text-align: center; border-right: 1px solid #d9d9d9;">TOTAL DE EXTRAORDINÁRIAS</td>
+                    
+                    <td style="background-color: #d9d9d9; border: 1px solid black; border-left: 1px solid #d9d9d9;"></td>
+                    
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer-block">
+            <div class="footer-left">
+                <img src="{{ url_for('static', filename='dte_logo.png') }}" class="footer-logo" alt="DTE">
+                <div>
+                    <strong>Diretoria de Tecnologia da Informática e Comunicação - <span style="color:rgb(0, 0, 0);">DTIC</span></strong><br>
+                    Av. Júlio César, 3000. Fone: (91) 8899-6479<br>
+                    CEP:66447-000. Belém-PA<br>
+                    E-mail: <a href="mailto:suportemaccbm@gmail.com">suportemaccbm@gmail.com</a>
+                </div>
+            </div>
+
+            <div class="footer-right">
+                <div class="signature-text">
+                    ________________________________<br>
+                    <br>
+                    <br>
+                    ____ / ____ / ________
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</body>
+</html>
