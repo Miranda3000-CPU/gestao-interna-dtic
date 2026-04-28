@@ -16,3 +16,4 @@ dist/
 .vscode/
 .idea/
 build_windows/
+installer_output/
