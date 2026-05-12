@@ -1,68 +1,109 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from functools import wraps
+from __future__ import annotations
+
+import calendar
 import json
+import locale
 import os
 import re
-import calendar
-from datetime import datetime, timedelta, date
-import locale
+from datetime import date, datetime, timedelta
+from typing import Any
+
+from flask import Flask, flash, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
 
-# Configuração de Caminhos Absolutos
-basedir = os.path.abspath(os.path.dirname(__file__))
-template_dir = os.path.join(basedir, 'templates')
-static_dir = os.path.join(basedir, 'static')
 
-app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+# Caminhos da aplicação
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+DB_CIVIL = os.path.join(BASE_DIR, "voluntarios.json")
+DB_MILITAR = os.path.join(BASE_DIR, "militares.json")
 
-DB_CIVIL = os.path.join(basedir, 'voluntarios.json')
-DB_MILITAR = os.path.join(basedir, 'militares.json')
+DEFAULT_COMMANDER = "LUIZ ALFREDO SILVA GALIZA DOS SANTOS – TCEL QOBM"
+DEFAULT_COMMANDER_NOME_GUERRA = "LUIZ ALFREDO"
 
-app.config['SECRET_KEY'] = os.urandom(24)
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+app.config["SECRET_KEY"] = os.urandom(24)
 
 
-# Tenta configurar locale para PT-BR (Linux, Mac e Windows)
-for loc in ('pt_BR.UTF-8', 'pt_BR.utf8', 'pt_BR', 'Portuguese_Brazil.1252', ''):
-    try:
-        locale.setlocale(locale.LC_ALL, loc)
-        break
-    except locale.Error:
-        continue
+def configure_locale() -> None:
+    """Configura locale PT-BR com fallback entre plataformas."""
+    for loc in (
+        "pt_BR.UTF-8",
+        "pt_BR.utf8",
+        "pt_BR",
+        "Portuguese_Brazil.1252",
+        "",
+    ):
+        try:
+            locale.setlocale(locale.LC_ALL, loc)
+            break
+        except locale.Error:
+            continue
 
-# Decorator mantido para compatibilidade (sem autenticação)
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        return f(*args, **kwargs)
-    return decorated_function
 
-# Manipulador de erro 403
 @app.errorhandler(403)
 def forbidden_error(error):
-    flash('Acesso negado. Redirecionando para home.')
-    return redirect(url_for('home'))
+    flash("Acesso negado. Redirecionando para home.")
+    return redirect(url_for("home"))
 
-# Manipulador de erro 404
+
 @app.errorhandler(404)
 def not_found_error(error):
-    flash('Página não encontrada.')
-    return redirect(url_for('home'))
+    flash("Página não encontrada.")
+    return redirect(url_for("home"))
 
-# --- FUNÇÕES DE BANCO DE DADOS ---
-def load_json(filepath):
+
+def load_json(filepath: str) -> list[dict[str, Any]]:
     if not os.path.exists(filepath):
         return []
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return json.load(f)
 
-def save_json(filepath, data):
-    with open(filepath, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    try:
+        with open(filepath, "r", encoding="utf-8") as file:
+            data = json.load(file)
+    except (json.JSONDecodeError, OSError):
+        return []
 
-def _to_upper(value):
+    if not isinstance(data, list):
+        return []
+
+    return [item for item in data if isinstance(item, dict)]
+
+
+def save_json(filepath: str, data: list[dict[str, Any]]) -> None:
+    with open(filepath, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
+
+
+def _to_upper(value: str | None) -> str:
     return (value or "").strip().upper()
 
-def _highlight_nome_guerra(nome, nome_guerra):
+
+def _safe_int(
+    value: str | None, default: int, min_value: int | None = None, max_value: int | None = None
+) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return default
+
+    if min_value is not None and number < min_value:
+        return default
+    if max_value is not None and number > max_value:
+        return default
+
+    return number
+
+
+def _next_id(data: list[dict[str, Any]]) -> int:
+    return max((item.get("id", 0) for item in data), default=0) + 1
+
+
+def _delete_by_id(data: list[dict[str, Any]], item_id: int) -> list[dict[str, Any]]:
+    return [item for item in data if item.get("id") != item_id]
+
+
+def _highlight_nome_guerra(nome: str | None, nome_guerra: str | None) -> Markup:
     nome = (nome or "").strip()
     nome_guerra = (nome_guerra or "").strip()
 
@@ -71,132 +112,42 @@ def _highlight_nome_guerra(nome, nome_guerra):
     if not nome_guerra:
         return escape(nome)
 
-    # 1) Se a expressão completa existir no nome, destaca de uma vez.
     match_full = re.search(re.escape(nome_guerra), nome, flags=re.IGNORECASE)
     if match_full:
-        ini, fim = match_full.span()
-        return Markup(f"{escape(nome[:ini])}<b>{escape(nome[ini:fim])}</b>{escape(nome[fim:])}")
+        start, end = match_full.span()
+        return Markup(f"{escape(nome[:start])}<b>{escape(nome[start:end])}</b>{escape(nome[end:])}")
 
-    # 2) Se não for contíguo (ex.: 'FÁBIO CRUZ' em 'FÁBIO REIS DA CRUZ'),
-    # destaca cada token encontrado.
     tokens = re.findall(r"[A-ZÀ-Ý0-9]+", nome_guerra.upper())
-    tokens = sorted({t for t in tokens if len(t) >= 2}, key=len, reverse=True)
+    tokens = sorted({token for token in tokens if len(token) >= 2}, key=len, reverse=True)
     if not tokens:
         return escape(nome)
 
     spans = []
     for token in tokens:
         pattern = rf"(?<!\w){re.escape(token)}(?!\w)"
-        for m in re.finditer(pattern, nome, flags=re.IGNORECASE):
-            spans.append(m.span())
+        spans.extend(match.span() for match in re.finditer(pattern, nome, flags=re.IGNORECASE))
 
     if not spans:
         return escape(nome)
 
-    spans.sort(key=lambda x: (x[0], -(x[1] - x[0])))
+    spans.sort(key=lambda span: (span[0], -(span[1] - span[0])))
     merged = []
-    for ini, fim in spans:
-        if not merged or ini >= merged[-1][1]:
-            merged.append([ini, fim])
+    for start, end in spans:
+        if not merged or start >= merged[-1][1]:
+            merged.append([start, end])
 
-    out = []
+    chunks = []
     last = 0
-    for ini, fim in merged:
-        out.append(escape(nome[last:ini]))
-        out.append(Markup(f"<b>{escape(nome[ini:fim])}</b>"))
-        last = fim
-    out.append(escape(nome[last:]))
-    return Markup("").join(out)
-app.jinja_env.filters['highlight_nome_guerra'] = _highlight_nome_guerra
+    for start, end in merged:
+        chunks.append(escape(nome[last:start]))
+        chunks.append(Markup(f"<b>{escape(nome[start:end])}</b>"))
+        last = end
+    chunks.append(escape(nome[last:]))
 
-# --- ROTAS PRINCIPAIS ---
-@app.route('/login')
-def login():
-    return redirect(url_for('home'))
+    return Markup("").join(chunks)
 
-@app.route('/logout')
-def logout():
-    return redirect(url_for('home'))
 
-@app.route('/')
-@login_required
-def home():
-    civis = load_json(DB_CIVIL)
-    militares = load_json(DB_MILITAR)
-
-    agora = datetime.now()
-    ultimo_dia = calendar.monthrange(agora.year, agora.month)[1]
-
-    dados_padrao = {
-        "nota_num": "001",
-        "dia_inicio": "01",
-        "dia_fim": str(ultimo_dia),
-        "comandante": "LUIZ ALFREDO SILVA GALIZA DOS SANTOS – TCEL QOBM",
-        "nome_guerra_comandante": "LUIZ ALFREDO",
-        "ano_atual": agora.year,
-        "mes_atual": agora.month
-    }
-
-    return render_template(
-        'index.html',
-        civis=civis,
-        militares=militares,
-        padrao=dados_padrao
-    )
-
-# --- CRUD CIVIL (Mantido) ---
-@app.route('/add_civil', methods=['POST'])
-@login_required
-def add_civil():
-    data = load_json(DB_CIVIL)
-    novo_id = max([v.get('id', 0) for v in data if isinstance(v, dict)] + [0]) + 1
-    novo = {
-        "id": novo_id,
-        "nome": _to_upper(request.form.get('nome')),
-        "nome_guerra": _to_upper(request.form.get('nome_guerra')),
-        "funcao": (request.form.get('funcao') or "").strip(),
-        "turno": (request.form.get('turno') or "").strip()
-    }
-    data.append(novo)
-    save_json(DB_CIVIL, data)
-    return redirect(url_for('home'))
-
-@app.route('/del_civil/<int:id>')
-@login_required
-def del_civil(id):
-    data = load_json(DB_CIVIL)
-    data = [v for v in data if v.get('id') != id]
-    save_json(DB_CIVIL, data)
-    return redirect(url_for('home'))
-
-# --- CRUD MILITAR (Novo) ---
-@app.route('/add_militar', methods=['POST'])
-@login_required
-def add_militar():
-    data = load_json(DB_MILITAR)
-    novo_id = max([v.get('id', 0) for v in data if isinstance(v, dict)] + [0]) + 1
-    novo = {
-        "id": novo_id,
-        "graduacao": _to_upper(request.form.get('graduacao')),
-        "nome": _to_upper(request.form.get('nome')),
-        "nome_guerra": _to_upper(request.form.get('nome_guerra'))
-    }
-    data.append(novo)
-    save_json(DB_MILITAR, data)
-    return redirect(url_for('home'))
-
-@app.route('/del_militar/<int:id>')
-@login_required
-def del_militar(id):
-    data = load_json(DB_MILITAR)
-    data = [v for v in data if v.get('id') != id]
-    save_json(DB_MILITAR, data)
-    return redirect(url_for('home'))
-
-# --- GERAÇÃO DE FOLHAS ---
-
-def _easter_sunday(year):
-    """Computa a data do domingo de Páscoa (algoritmo de Meeus/Jones/Butcher)."""
+def _easter_sunday(year: int) -> date:
     a = year % 19
     b = year // 100
     c = year % 100
@@ -213,48 +164,33 @@ def _easter_sunday(year):
     day = ((h + l - 7 * m + 114) % 31) + 1
     return date(year, month, day)
 
-def _get_feriados_brasil(year):
-    """Retorna conjunto de datas de feriados nacionais no Brasil."""
+
+def _get_feriados_brasil(year: int) -> set[date]:
     pascoa = _easter_sunday(year)
     return {
-        date(year, 1, 1),    # Confraternização Universal
-        date(year, 4, 21),   # Tiradentes
-        date(year, 5, 1),    # Dia do Trabalhador
-        date(year, 9, 7),    # Independência do Brasil
-        date(year, 10, 12),  # Nossa Senhora Aparecida
-        date(year, 11, 2),   # Finados
-        date(year, 11, 15),  # Proclamação da República
-        date(year, 11, 20),  # Dia da Consciência Negra
-        date(year, 12, 25),  # Natal
-        pascoa - timedelta(days=47),  # Carnaval (terça)
-        pascoa - timedelta(days=2),   # Sexta-feira Santa
-        pascoa + timedelta(days=60),  # Corpus Christi
+        date(year, 1, 1),
+        date(year, 4, 21),
+        date(year, 5, 1),
+        date(year, 9, 7),
+        date(year, 10, 12),
+        date(year, 11, 2),
+        date(year, 11, 15),
+        date(year, 11, 20),
+        date(year, 12, 25),
+        pascoa - timedelta(days=47),
+        pascoa - timedelta(days=2),
+        pascoa + timedelta(days=60),
     }
 
 
-@app.route('/gerar_civil')
-@login_required
-def gerar_civil():
-    voluntarios = load_json(DB_CIVIL)
-    comandante = request.args.get('comandante', 'LUIZ ALFREDO SILVA GALIZA DOS SANTOS – TCEL QOBM')
-    nome_guerra_comandante = request.args.get('nome_guerra_comandante', 'LUIZ ALFREDO')
-    
-    agora = datetime.now()
-    try:
-        mes_selecionado = int(request.args.get('mes', agora.month))
-        ano_selecionado = int(request.args.get('ano', agora.year))
-    except ValueError:
-        mes_selecionado = agora.month
-        ano_selecionado = agora.year
-    mes_nome = calendar.month_name[mes_selecionado].upper()
-    _, num_dias = calendar.monthrange(ano_selecionado, mes_selecionado)
-    
-    feriados = _get_feriados_brasil(ano_selecionado)
+def _build_dias_civis(ano: int, mes: int) -> list[dict[str, Any]]:
+    _, num_dias = calendar.monthrange(ano, mes)
+    feriados = _get_feriados_brasil(ano)
     dias = []
-    for d in range(1, num_dias + 1):
-        dt = datetime(ano_selecionado, mes_selecionado, d)
-        data_atual = date(ano_selecionado, mes_selecionado, d)
-        is_fim_de_semana = dt.weekday() >= 5
+
+    for day in range(1, num_dias + 1):
+        dt = datetime(ano, mes, day)
+        data_atual = date(ano, mes, day)
         is_feriado = data_atual in feriados
 
         texto = ""
@@ -265,56 +201,161 @@ def gerar_civil():
         elif dt.weekday() == 6:
             texto = "DOMINGO"
 
-        dias.append({
-            "numero": d,
-            "is_fim_de_semana": is_fim_de_semana, # 5=Sáb, 6=Dom
-            "is_feriado": is_feriado,
-            "texto": texto
-        })
-        
-    return render_template('folha_civil.html', 
-                           voluntarios=voluntarios, 
-                           mes=mes_nome, 
-                           ano=ano_selecionado, 
-                           dias=dias, 
-                           comandante=comandante,
-                           nome_guerra_comandante=nome_guerra_comandante)
+        dias.append(
+            {
+                "numero": day,
+                "is_fim_de_semana": dt.weekday() >= 5,
+                "is_feriado": is_feriado,
+                "texto": texto,
+            }
+        )
 
-@app.route('/gerar_militar')
-@login_required
+    return dias
+
+
+def _build_dias_militares(ano: int, mes: int) -> list[dict[str, str]]:
+    _, ultimo_dia = calendar.monthrange(ano, mes)
+    dias = []
+
+    for day in range(1, ultimo_dia + 1):
+        dt = datetime(ano, mes, day)
+        tipo = "dia_util"
+        texto = ""
+
+        if dt.weekday() == 5:
+            tipo = "sabado"
+            texto = "SÁBADO"
+        elif dt.weekday() == 6:
+            tipo = "domingo"
+            texto = "DOMINGO"
+
+        dias.append({"numero": f"{day:02d}", "tipo": tipo, "texto": texto})
+
+    return dias
+
+
+app.jinja_env.filters["highlight_nome_guerra"] = _highlight_nome_guerra
+configure_locale()
+
+
+@app.route("/")
+def home():
+    civis = load_json(DB_CIVIL)
+    militares = load_json(DB_MILITAR)
+
+    agora = datetime.now()
+    ultimo_dia = calendar.monthrange(agora.year, agora.month)[1]
+
+    dados_padrao = {
+        "nota_num": "001",
+        "dia_inicio": "01",
+        "dia_fim": str(ultimo_dia),
+        "comandante": DEFAULT_COMMANDER,
+        "nome_guerra_comandante": DEFAULT_COMMANDER_NOME_GUERRA,
+        "ano_atual": agora.year,
+        "mes_atual": agora.month,
+    }
+
+    return render_template("index.html", civis=civis, militares=militares, padrao=dados_padrao)
+
+
+@app.route("/add_civil", methods=["POST"])
+def add_civil():
+    data = load_json(DB_CIVIL)
+    novo = {
+        "id": _next_id(data),
+        "nome": _to_upper(request.form.get("nome")),
+        "nome_guerra": _to_upper(request.form.get("nome_guerra")),
+        "funcao": (request.form.get("funcao") or "").strip(),
+        "turno": (request.form.get("turno") or "").strip(),
+    }
+
+    if not novo["nome"] or not novo["nome_guerra"]:
+        flash("Nome e nome de guerra são obrigatórios para cadastro civil.")
+        return redirect(url_for("home"))
+
+    data.append(novo)
+    save_json(DB_CIVIL, data)
+    return redirect(url_for("home"))
+
+
+@app.route("/del_civil/<int:item_id>")
+def del_civil(item_id: int):
+    data = load_json(DB_CIVIL)
+    save_json(DB_CIVIL, _delete_by_id(data, item_id))
+    return redirect(url_for("home"))
+
+
+@app.route("/add_militar", methods=["POST"])
+def add_militar():
+    data = load_json(DB_MILITAR)
+    novo = {
+        "id": _next_id(data),
+        "graduacao": _to_upper(request.form.get("graduacao")),
+        "nome": _to_upper(request.form.get("nome")),
+        "nome_guerra": _to_upper(request.form.get("nome_guerra")),
+    }
+
+    if not novo["nome"] or not novo["nome_guerra"]:
+        flash("Nome e nome de guerra são obrigatórios para cadastro militar.")
+        return redirect(url_for("home"))
+
+    data.append(novo)
+    save_json(DB_MILITAR, data)
+    return redirect(url_for("home"))
+
+
+@app.route("/del_militar/<int:item_id>")
+def del_militar(item_id: int):
+    data = load_json(DB_MILITAR)
+    save_json(DB_MILITAR, _delete_by_id(data, item_id))
+    return redirect(url_for("home"))
+
+
+@app.route("/gerar_civil")
+def gerar_civil():
+    voluntarios = load_json(DB_CIVIL)
+    comandante = request.args.get("comandante", DEFAULT_COMMANDER)
+    nome_guerra_comandante = request.args.get(
+        "nome_guerra_comandante", DEFAULT_COMMANDER_NOME_GUERRA
+    )
+
+    agora = datetime.now()
+    mes = _safe_int(request.args.get("mes"), agora.month, min_value=1, max_value=12)
+    ano = _safe_int(request.args.get("ano"), agora.year, min_value=1900, max_value=2100)
+    mes_nome = calendar.month_name[mes].upper()
+
+    return render_template(
+        "folha_civil.html",
+        voluntarios=voluntarios,
+        mes=mes_nome,
+        ano=ano,
+        dias=_build_dias_civis(ano, mes),
+        comandante=comandante,
+        nome_guerra_comandante=nome_guerra_comandante,
+    )
+
+
+@app.route("/gerar_militar")
 def gerar_militar():
     militares = load_json(DB_MILITAR)
-    nota_num = request.args.get('nota_num', '001')
+    nota_num = request.args.get("nota_num", "001")
 
     agora = datetime.now()
     mes_nome = calendar.month_name[agora.month].upper()
     _, ultimo_dia = calendar.monthrange(agora.year, agora.month)
 
-    periodo_str = f"01 A {ultimo_dia:02d} DE {mes_nome} DE {agora.year}"
-    nota_str = f"{nota_num}/{agora.year}"
+    periodo = f"01 A {ultimo_dia:02d} DE {mes_nome} DE {agora.year}"
+    nota = f"{nota_num}/{agora.year}"
 
-    dias = []
-    for d in range(1, ultimo_dia + 1):
-        dt = datetime(agora.year, agora.month, d)
-        weekday = dt.weekday()
+    return render_template(
+        "folha_militar.html",
+        militares=militares,
+        nota=nota,
+        periodo=periodo,
+        dias=_build_dias_militares(agora.year, agora.month),
+    )
 
-        tipo = "dia_util"
-        texto = ""
-
-        if weekday == 5:
-            tipo = "sabado"
-            texto = "SÁBADO"
-        elif weekday == 6:
-            tipo = "domingo"
-            texto = "DOMINGO"
-
-        dias.append({"numero": f"{d:02d}", "tipo": tipo, "texto": texto})
-
-    return render_template('folha_militar.html',
-                           militares=militares,
-                           nota=nota_str,
-                           periodo=periodo_str,
-                           dias=dias)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
