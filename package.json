@@ -1,0 +1,31 @@
+{
+  "name": "gestao-interna-dtic",
+  "version": "2.0.0",
+  "description": "Sistema de Gestão de Pessoal - CBMPA/DTIC (Node.js)",
+  "main": "launcher.js",
+  "scripts": {
+    "start": "node launcher.js",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "voluntarios.json",
+      "militares.json",
+      "config.json"
+    ],
+    "targets": [
+      "node18-win-x64",
+      "node18-linux-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "bin": "launcher.js",
+  "license": "MIT"
+}

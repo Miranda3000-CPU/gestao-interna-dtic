@@ -1,11 +1,11 @@
 <div align="center">
   <img width="1236" height="744" alt="Screenshot do Sistema" src="https://github.com/user-attachments/assets/5de02ec8-5ade-495b-a7a3-260b0bc6ec86" />
 
-  <h1>Sistema de Gestao de Pessoal - CBMPA/DTIC</h1>
+  <h1>Sistema de Gestão de Pessoal - CBMPA/DTIC</h1>
 
   <p>
-    Sistema interno da <b>Diretoria de Tecnologia da Informacao e Comunicacao (DTIC)</b> do Corpo de Bombeiros Militar do Para.<br>
-    Gerencia o efetivo de <b>Voluntarios Civis</b> e <b>Militares (Pracas)</b>, com emissao automatica de folhas de frequencia e registros de servico extraordinario.
+    Sistema interno da <b>Diretoria de Tecnologia da Informação e Comunicação (DTIC)</b> do Corpo de Bombeiros Militar do Pará.<br>
+    Gerencia o efetivo de <b>Voluntários Civis</b> e <b>Militares (Praças)</b>, com emissão automática de folhas de frequência e registros de serviço extraordinário.
   </p>
 </div>
 
@@ -13,21 +13,21 @@
 
 ## Funcionalidades
 
-### Modulo Voluntarios Civis
-- Cadastro e remocao de voluntarios.
-- Geracao de folha de frequencia com dias uteis, fins de semana e feriados nacionais automaticos.
-- Persistencia via `voluntarios.json`.
+### Módulo Voluntários Civis
+- Cadastro e remoção de voluntários.
+- Geração de folha de frequência com dias úteis, fins de semana e feriados nacionais automáticos.
+- Persistência via `voluntarios.json`.
 
-### Modulo Militares / Pracas
-- Cadastro com graduacao e nome de guerra.
-- Geracao da Folha de Servico Extraordinario / Reforco do Expediente.
-- Preenchimento automatico com marcacoes especificas para sabados e domingos.
-- Persistencia de dados em `militares.json`.
+### Módulo Militares / Praças
+- Cadastro com graduação e nome de guerra.
+- Geração da Folha de Serviço Extraordinário / Reforço do Expediente.
+- Preenchimento automático com marcações específicas para sábados e domingos.
+- Persistência de dados em `militares.json`.
 
 ### Geral
-- Calculo de feriados nacionais moveis e fixos.
+- Cálculo de feriados nacionais móveis e fixos.
 - Interface responsiva com Tailwind CSS.
-- Empacotamento para Windows (.exe) com PyInstaller.
+- Empacotamento standalone para Windows/Linux com `pkg`.
 
 ---
 
@@ -35,10 +35,10 @@
 
 | Componente | Tecnologia |
 |:---|:---|
-| Linguagem | Python 3.10+ |
-| Framework Web | Flask 3.x |
-| Frontend | HTML5, Jinja2 e Tailwind CSS (CDN) |
-| Distribuicao Windows | PyInstaller |
+| Runtime | Node.js 18+ |
+| Backend | Express.js 4.x |
+| Frontend | HTML5, Vanilla JS e Tailwind CSS (CDN) |
+| Distribuição | `pkg` (executável standalone) |
 | Armazenamento | JSON |
 
 ---
@@ -47,71 +47,71 @@
 
 ```text
 gestao-interna-dtic/
-├── app.py
-├── run_app.py
-├── build_windows.bat
-├── build_windows.sh
-├── requirements_windows.txt
-├── gestao_dtic.spec
+├── package.json
+├── server.js              # Servidor Express + API REST
+├── launcher.js            # Inicia servidor + abre navegador
 ├── militares.json
 ├── voluntarios.json
-├── templates/
-└── static/
+├── public/
+│   ├── index.html         # SPA principal
+│   ├── folha_civil.html   # Relatório de frequência civil
+│   ├── folha_militar.html # Relatório de serviço extraordinário
+│   ├── js/
+│   │   ├── api.js         # Chamadas fetch ao backend
+│   │   ├── utils.js       # highlight_nome_guerra e helpers
+│   │   ├── holidays.js    # Cálculo de feriados
+│   │   ├── civil-report.js
+│   │   └── militar-report.js
+│   └── img/
+│       ├── brasao.jpg
+│       ├── dte_logo.png
+│       ├── header_militar.png
+│       └── icon.ico
 ```
 
 ---
 
-## Execucao local
+## Execução Local
 
 ```bash
-# Cria e ativa o ambiente virtual
-python -m venv venv
+# Instalar dependências
+npm install
 
-# Windows
-venv\Scripts\activate
+# Executar (abre o navegador automaticamente)
+npm start
 
-# Linux/Mac
-source venv/bin/activate
-
-# Dependencias
-pip install -r requirements_windows.txt
-
-# Execucao
-python app.py
+# Ou apenas o servidor (sem abrir navegador)
+npm run server
 ```
 
-Aplicacao disponivel em `http://localhost:5000`.
+Aplicação disponível em `http://localhost:3000`.
 
 ---
 
-## Build do executavel Windows
+## Build do Executável
 
-### Opcao 1: Build no proprio Windows
-
-```bat
-build_windows.bat
-```
-
-Saida esperada:
-`dist_windows\GestaoInternaDTIC\GestaoInternaDTIC.exe`
-
-### Opcao 2: Build no Linux com Wine
+### Gerar .exe para Windows
 
 ```bash
-./build_windows.sh
+npx pkg . --targets node18-win-x64 --output dist/GestaoInternaDTIC.exe
 ```
 
-Se precisar, ajuste o Python do Wine:
+### Gerar binário para Linux
 
 ```bash
-WINE_PYTHON="/caminho/para/python.exe" ./build_windows.sh
+npx pkg . --targets node18-linux-x64 --output dist/GestaoInternaDTIC
 ```
 
-Saida esperada:
-`dist_windows/GestaoInternaDTIC/GestaoInternaDTIC.exe`
+Saída esperada: executável standalone na pasta `dist/`.
+
+### Build para ambas plataformas
+
+```bash
+npx pkg .
+```
 
 ---
 
-## Licenca
+## Licença
 
-Distribuido sob a licenca MIT.
+Distribuído sob a licença MIT.

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Frequência</title>
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/holidays.js"></script>
+    <style>
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 10mm; 
+            }
+            body { 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .no-print { display: none; }
+            .page-break { page-break-after: always; }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 210mm; 
+            margin: 0 auto; 
+            position: relative;
+        }
+
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .uppercase { text-transform: uppercase; }
+
+        .header-box { text-align: center; margin-bottom: 10px; }
+        .header-logo { height: 65px; margin-bottom: 5px; }
+        .header-text { font-size: 12px; font-weight: bold; line-height: 1.2; }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 5px; 
+            font-size: 10px;
+        }
+        td, th { 
+            border: 1px solid black; 
+            padding: 5px 3px; 
+            vertical-align: middle; 
+        }
+
+        th { background-color: #d9d9d9; font-weight: bold; text-align: center; }
+        .col-dia { width: 35px; text-align: center; background-color: #e0e0e0; font-weight: bold; }
+        
+        .weekend-text { font-weight: bold; letter-spacing: 1px; text-align: center; }
+        
+        .title-box {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+
+        .footer-spacer { height: 20px; }
+        
+        .signature-block {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid black;
+            width: 250px;
+            margin: 0 auto 5px auto;
+        }
+
+        .double-signature {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        .sig-item {
+            width: 45%;
+            text-align: center;
+        }
+
+        .check-col { width: 30px; text-align: center; }
+        .total-row { background-color: #d9d9d9; font-weight: bold; text-align: left; padding-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="position: fixed; top: 0; left: 0; width: 100%; background: #333; color: white; padding: 10px; text-align: center; z-index: 9999;">
+        <button onclick="window.print()" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; font-size: 14px;">🖨️ IMPRIMIR / SALVAR PDF</button>
+    </div>
+    <div style="height: 50px;" class="no-print"></div>
+
+    <div id="content"></div>
+
+    <script src="js/civil-report.js"></script>
+</body>
+</html>

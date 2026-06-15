@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão DTIC - Integrada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+</head>
+<body class="bg-slate-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-red-800 mb-8 border-b-4 border-red-800 pb-2 flex justify-between items-center">
+            SISTEMA DE GESTÃO DE PESSOAL - CBMPA/DTIC
+            <span class="text-slate-500 text-base font-normal">Sistema Interno</span>
+        </h1>
+
+        <!-- Mensagens flash -->
+        <div id="flash-msg" class="hidden mb-4 p-3 rounded text-center font-bold"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- ==================== CIVIS ==================== -->
+            <div class="bg-white p-6 rounded-lg shadow-lg border-t-8 border-blue-600">
+                <h2 class="text-2xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                    <span>👤</span> Voluntários Civis
+                </h2>
+                
+                <form id="form-civil" class="bg-blue-50 p-4 rounded mb-4 text-sm">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <input name="nome" placeholder="Nome Completo" class="border p-2 rounded" required>
+                        <input name="nome_guerra" placeholder="Nome Guerra" class="border p-2 rounded" required>
+                        <select name="funcao" class="border p-2 rounded">
+                            <option>Técnico</option><option>Secretária</option>
+                        </select>
+                        <select name="turno" class="border p-2 rounded">
+                            <option value="manhã">Manhã</option><option value="tarde">Tarde</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white w-full py-1 rounded font-bold hover:bg-blue-700">Adicionar Civil</button>
+                </form>
+
+                <form id="form-civil-print" class="mb-4 border p-2 rounded bg-gray-50">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Comandante:</label>
+                    <input name="comandante" id="input-comandante" class="w-full border p-1 rounded mb-2 text-xs">
+                    <input type="hidden" name="nome_guerra_comandante" id="input-nome-guerra-comandante">
+
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500">Mês</label>
+                            <select name="mes" class="w-full border p-1 rounded text-xs" id="civil-mes"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500">Ano</label>
+                            <input type="number" name="ano" id="civil-ano" class="w-full border p-1 rounded text-xs">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">
+                        🖨️ Imprimir Frequência Civil
+                    </button>
+                </form>
+
+                <div class="overflow-y-auto max-h-60" id="lista-civis"></div>
+            </div>
+
+            <!-- ==================== MILITARES ==================== -->
+            <div class="bg-white p-6 rounded-lg shadow-lg border-t-8 border-red-600">
+                <h2 class="text-2xl font-bold text-red-800 mb-4 flex items-center gap-2">
+                    <span>🎖️</span> Militares (Praças)
+                </h2>
+                
+                <form id="form-militar" class="bg-red-50 p-4 rounded mb-4 text-sm">
+                    <div class="grid grid-cols-1 gap-2 mb-2">
+                        <div class="flex gap-2">
+                            <select name="graduacao" class="border p-2 rounded w-1/3">
+                                <option>SD/QBM</option><option>CB/QBM</option>
+                                <option>3° SGT/QBM</option><option>2° SGT/QBM</option>
+                                <option>1° SGT/QBM</option><option>SUB TEN/QBM</option>
+                                <option>2° TEN/QBM</option>
+                            </select>
+                            <input name="nome_guerra" placeholder="Nome de Guerra" class="border p-2 rounded w-2/3" required>
+                        </div>
+                        <input name="nome" placeholder="Nome Completo" class="border p-2 rounded" required>
+                    </div>
+                    <button type="submit" class="bg-red-700 text-white w-full py-1 rounded font-bold hover:bg-red-800">Adicionar Militar</button>
+                </form>
+
+                <form id="form-militar-print" class="mb-4 border p-2 rounded bg-gray-50">
+                    <div class="mb-2">
+                        <label class="block text-xs font-bold text-gray-500">Nota de Serviço Nº</label>
+                        <input name="nota_num" id="input-nota-num" class="w-full border p-2 rounded text-center font-bold text-gray-700">
+                        <p class="text-xs text-gray-400 mt-1 text-center">Geração automática para o mês atual.</p>
+                    </div>
+                    <button type="submit" class="w-full bg-red-600 text-white py-2 rounded font-bold hover:bg-red-700 flex justify-center items-center gap-2">
+                        <span>🖨️</span> Imprimir Extraordinário
+                    </button>
+                </form>
+
+                <div class="overflow-y-auto max-h-60" id="lista-militares"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ====================================================================
+    // Config (comandante persistente)
+    // ====================================================================
+    async function loadConfig() {
+        try {
+            const resp = await fetch('/api/config');
+            const cfg = await resp.json();
+            document.getElementById('input-comandante').value = cfg.comandante || '';
+            document.getElementById('input-nome-guerra-comandante').value = cfg.nome_guerra_comandante || '';
+            document.getElementById('input-nota-num').value = cfg.nota_num || '001';
+        } catch {
+            // fallback: campos já vazios
+        }
+    }
+
+    async function saveConfig() {
+        const comandante = document.getElementById('input-comandante').value;
+        const nome_guerra = document.getElementById('input-nome-guerra-comandante').value;
+        const nota_num = document.getElementById('input-nota-num').value;
+        try {
+            await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comandante, nome_guerra_comandante: nome_guerra, nota_num }),
+            });
+        } catch { /* silencioso */ }
+    }
+
+    // ====================================================================
+    // Inicialização
+    // ====================================================================
+    const now = new Date();
+
+    // Preenche selects de mês/ano
+    (function initMonthYear() {
+        const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const selCivil = document.getElementById('civil-mes');
+        for (let i = 0; i < 12; i++) {
+            const opt = document.createElement('option');
+            opt.value = i + 1;
+            opt.textContent = nomesMeses[i];
+            if ((i + 1) === now.getMonth() + 1) opt.selected = true;
+            selCivil.appendChild(opt);
+        }
+        document.getElementById('civil-ano').value = now.getFullYear();
+    })();
+
+    // Salva config ao perder foco nos campos de configuração
+    document.getElementById('input-comandante').addEventListener('blur', saveConfig);
+    document.getElementById('input-nota-num').addEventListener('blur', saveConfig);
+
+    // Flash message
+    function flash(msg, type) {
+        const el = document.getElementById('flash-msg');
+        el.textContent = msg;
+        el.className = 'mb-4 p-3 rounded text-center font-bold';
+        if (type === 'error') {
+            el.classList.add('bg-red-200', 'text-red-800');
+        } else {
+            el.classList.add('bg-green-200', 'text-green-800');
+        }
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 4000);
+    }
+
+    // ====================================================================
+    // CRUD Civis
+    // ====================================================================
+    async function loadCivis() {
+        const civis = await API.getCivis();
+        const container = document.getElementById('lista-civis');
+        if (civis.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-sm p-2">Nenhum civil cadastrado.</p>';
+            return;
+        }
+        container.innerHTML = `
+            <table class="w-full text-sm">
+                ${civis.map(c => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2">${Utils.highlightNomeGuerra(c.nome, c.nome_guerra)}</td>
+                        <td class="p-2 font-bold text-blue-900">${c.nome_guerra}</td>
+                        <td class="p-2 text-right"><a href="#" onclick="delCivil(${c.id})" class="text-red-500 font-bold">X</a></td>
+                    </tr>
+                `).join('')}
+            </table>`;
+    }
+
+    async function loadMilitares() {
+        const militares = await API.getMilitares();
+        const container = document.getElementById('lista-militares');
+        if (militares.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-sm p-2">Nenhum militar cadastrado.</p>';
+            return;
+        }
+        container.innerHTML = `
+            <table class="w-full text-sm">
+                ${militares.map(m => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2 text-xs text-gray-500">${m.graduacao}</td>
+                        <td class="p-2">${Utils.highlightNomeGuerra(m.nome, m.nome_guerra)}</td>
+                        <td class="p-2 font-bold text-red-900">${m.nome_guerra}</td>
+                        <td class="p-2 text-right"><a href="#" onclick="delMilitar(${m.id})" class="text-red-500 font-bold">X</a></td>
+                    </tr>
+                `).join('')}
+            </table>`;
+    }
+
+    async function reloadAll() {
+        await Promise.all([loadCivis(), loadMilitares()]);
+    }
+
+    // Forms
+    document.getElementById('form-civil').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        try {
+            await API.addCivil({
+                nome: form.nome.value,
+                nome_guerra: form.nome_guerra.value,
+                funcao: form.funcao.value,
+                turno: form.turno.value,
+            });
+            form.reset();
+            await reloadAll();
+        } catch (err) {
+            flash(err.message, 'error');
+        }
+    });
+
+    document.getElementById('form-militar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        try {
+            await API.addMilitar({
+                graduacao: form.graduacao.value,
+                nome: form.nome.value,
+                nome_guerra: form.nome_guerra.value,
+            });
+            form.reset();
+            await reloadAll();
+        } catch (err) {
+            flash(err.message, 'error');
+        }
+    });
+
+    window.delCivil = async function(id) {
+        await API.delCivil(id);
+        await reloadAll();
+    };
+
+    window.delMilitar = async function(id) {
+        await API.delMilitar(id);
+        await reloadAll();
+    };
+
+    // Impressão Civil
+    document.getElementById('form-civil-print').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const params = new URLSearchParams({
+            comandante: form.comandante.value,
+            nome_guerra_comandante: form.nome_guerra_comandante.value,
+            mes: form.mes.value,
+            ano: form.ano.value,
+        });
+        window.open('/folha_civil.html?' + params.toString(), '_blank');
+    });
+
+    // Impressão Militar
+    document.getElementById('form-militar-print').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const params = new URLSearchParams({
+            nota_num: form.nota_num.value,
+        });
+        window.open('/folha_militar.html?' + params.toString(), '_blank');
+    });
+
+    // Load inicial
+    loadConfig();
+    reloadAll();
+    </script>
+</body>
+</html>
