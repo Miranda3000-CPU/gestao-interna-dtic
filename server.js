@@ -169,6 +169,38 @@ app.post('/api/config', (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// API - Backup / Restore (exportar e importar dados)
+// ---------------------------------------------------------------------------
+
+app.get('/api/backup/export', (_req, res) => {
+  const backup = {
+    voluntarios: loadJSON('voluntarios.json'),
+    militares: loadJSON('militares.json'),
+    config: loadConfig(),
+    exportado_em: new Date().toISOString(),
+    versao: '2.0.0',
+  };
+  res.setHeader('Content-Disposition', 'attachment; filename="backup_gestao_dtic.json"');
+  res.json(backup);
+});
+
+app.post('/api/backup/import', (req, res) => {
+  const { voluntarios, militares, config } = req.body || {};
+
+  if (!Array.isArray(voluntarios) || !Array.isArray(militares)) {
+    return res.status(400).json({ error: 'Arquivo de backup inválido. Dados corrompidos.' });
+  }
+
+  saveJSON('voluntarios.json', voluntarios);
+  saveJSON('militares.json', militares);
+  if (config && typeof config === 'object' && !Array.isArray(config)) {
+    saveJSON('config.json', config);
+  }
+
+  res.json({ ok: true, message: 'Backup restaurado com sucesso!' });
+});
+
+// ---------------------------------------------------------------------------
 // Fallback - SPA
 // ---------------------------------------------------------------------------
 
