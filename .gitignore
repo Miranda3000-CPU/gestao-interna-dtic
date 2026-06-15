@@ -1,20 +1,39 @@
+# Dependências
+node_modules/
+
+# Build
+dist/
+dist_windows/
+build/
+build_windows/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Ambiente
+.env
+.env.local
+
+# Arquivos de dados (backups locais)
+*.sqlite3
+*.db
+
+# Python antigo (legado removido)
 __pycache__/
 *.py[cod]
 *$py.class
 .venv/
 venv/
 env/
-.env
 instance/
 .pytest_cache/
-build/
-dist_windows/
-dist/
 *.spec
-*.log
-*.db
-*.sqlite3
-.vscode/
-.idea/
-build_windows/
-installer_output/
+
+# OS
+.DS_Store
+Thumbs.db
