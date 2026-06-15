@@ -11,8 +11,23 @@ const PORT = process.env.PORT || 3000;
 
 function resolvePath(filepath) {
   // Se empacotado com pkg, usa o diretório do executável; senão, __dirname
-  const base = process.pkg ? path.dirname(process.execPath) : __dirname;
-  return path.join(base, filepath);
+  const exeDir = process.pkg ? path.dirname(process.execPath) : __dirname;
+
+  // Arquivos de dados (JSONs mutáveis) vão para %LOCALAPPDATA%/GestaoDTIC no Windows
+  // para evitar exigência de admin. Assets estáticos permanecem no diretório do exe.
+  const dataFiles = ['voluntarios.json', 'militares.json', 'config.json'];
+  if (dataFiles.includes(filepath)) {
+    if (process.platform === 'win32') {
+      const localAppData = process.env.LOCALAPPDATA || process.env.APPDATA || exeDir;
+      const dataDir = path.join(localAppData, 'GestaoDTIC');
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      return path.join(dataDir, filepath);
+    }
+  }
+
+  return path.join(exeDir, filepath);
 }
 
 function loadJSON(filename) {
@@ -77,6 +92,9 @@ app.post('/api/civis', (req, res) => {
 
 app.delete('/api/civis/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'ID inválido.' });
+  }
   let data = loadJSON('voluntarios.json');
   const before = data.length;
   data = data.filter(item => item.id !== id);
@@ -115,6 +133,9 @@ app.post('/api/militares', (req, res) => {
 
 app.delete('/api/militares/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'ID inválido.' });
+  }
   let data = loadJSON('militares.json');
   const before = data.length;
   data = data.filter(item => item.id !== id);

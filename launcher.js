@@ -54,6 +54,17 @@ function openBrowser(port) {
 }
 
 (async function main() {
+  // Garante que o diretório de dados existe (para .exe standalone fora do MSI)
+  const fs = require('fs');
+  const path = require('path');
+  if (process.platform === 'win32') {
+    const localAppData = process.env.LOCALAPPDATA || process.env.APPDATA || __dirname;
+    const dataDir = path.join(localAppData, 'GestaoDTIC');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+  }
+
   PORT = await findFreePort();
 
   const server = app.listen(PORT, '127.0.0.1', () => {

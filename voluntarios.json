@@ -1,38 +1,10 @@
 [
     {
-        "id": 2,
-        "nome": "GIOVANNA SALDANHA GAIA",
-        "nome_guerra": "GIOVANNA",
-        "funcao": "Secretária",
-        "turno": "tarde"
-    },
-    {
-        "id": 4,
-        "nome": "HUGO DE OLIVEIRA MONTEIRO",
-        "nome_guerra": "HUGO",
-        "funcao": "Técnico",
-        "turno": "tarde"
-    },
-    {
         "id": 6,
         "nome": "GESSYCA LETHYCIA RODRIGUES BARBOSA",
         "nome_guerra": "GESSYCA",
         "funcao": "Secretária",
         "turno": "tarde"
-    },
-    {
-        "id": 7,
-        "nome": "LEONARDO MESQUITA COSTA",
-        "nome_guerra": "LEONARDO",
-        "funcao": "Técnico",
-        "turno": "manhã"
-    },
-    {
-        "id": 8,
-        "nome": "RUBIANNE VICTORIA DAS NEVES SANTANA",
-        "nome_guerra": "RUBIANNE",
-        "funcao": "Secretária",
-        "turno": "manhã"
     },
     {
         "id": 10,
@@ -54,5 +26,33 @@
         "nome_guerra": "LUAN",
         "funcao": "Técnico",
         "turno": "manhã"
+    },
+    {
+        "id": 13,
+        "nome": "HUGO DE OLIVEIRA MONTEIRO",
+        "nome_guerra": "HUGO MONTEIRO",
+        "funcao": "Técnico",
+        "turno": "tarde"
+    },
+    {
+        "id": 14,
+        "nome": "GIOVANNA SALDANHA GAIA",
+        "nome_guerra": "GIOVANNA SALDANHA",
+        "funcao": "Secretária",
+        "turno": "tarde"
+    },
+    {
+        "id": 15,
+        "nome": "RUAN CATETE BRANDÃO",
+        "nome_guerra": "RUAN BRANDÃO",
+        "funcao": "Técnico",
+        "turno": "manhã"
+    },
+    {
+        "id": 16,
+        "nome": "MATEUS SOUSA CASTELO BRANCO",
+        "nome_guerra": "CASTELO BRANCO",
+        "funcao": "Técnico",
+        "turno": "tarde"
     }
 ]

@@ -88,27 +88,37 @@ Aplicação disponível em `http://localhost:3000`.
 
 ---
 
-## Build do Executável
+## Build do Instalador MSI (Windows) + Executável
 
-### Gerar .exe para Windows
+### Script completo (recomendado)
 
 ```bash
-npx pkg . --targets node18-win-x64 --output dist/GestaoInternaDTIC.exe
+./build_msi.sh
 ```
 
-### Gerar binário para Linux
+Este script gera:
+- `dist/GestaoInternaDTIC.exe` — executável standalone (não requer Node.js)
+- `dist/GestaoInternaDTIC.msi` — instalador Windows
+
+### Apenas o .exe standalone
 
 ```bash
+# Windows
+npx pkg . --targets node18-win-x64 --output dist/GestaoInternaDTIC.exe
+
+# Linux
 npx pkg . --targets node18-linux-x64 --output dist/GestaoInternaDTIC
 ```
 
-Saída esperada: executável standalone na pasta `dist/`.
+---
 
-### Build para ambas plataformas
+## Instalação no Windows (usuário leigo)
 
-```bash
-npx pkg .
-```
+1. Entregue o arquivo `dist/GestaoInternaDTIC.msi`
+2. O usuário clica duas vezes no `.msi`
+3. A instalação **NÃO exige privilégios de administrador** (instala por usuário em `%LOCALAPPDATA%\Programs\GestaoDTIC`)
+4. Cria atalhos no Menu Iniciar e Área de Trabalho com o ícone do DTIC
+5. Os dados (voluntários, militares, config) são salvos em `%LOCALAPPDATA%\GestaoDTIC\` sem necessidade de admin
 
 ---
 
